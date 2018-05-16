@@ -37,7 +37,8 @@ class RequestExec extends Request{
   public void request(Session session, Channel channel) throws Exception{
     super.request(session, channel);
 
-    Buffer buf=new Buffer();
+    int bsize = 1 + 4 + Util.str2byte("exec").length + 1 + command.length;
+    Buffer buf=new Buffer(bsize);
     Packet packet=new Packet(buf);
 
     // send
@@ -47,11 +48,10 @@ class RequestExec extends Request{
     // boolean want reply        // 0
     // string command
     packet.reset();
-    buf.putByte((byte) Session.SSH_MSG_CHANNEL_REQUEST);
-    buf.putInt(channel.getRecipient());
+    buf.putByte((byte) Session.SSH_MSG_CHANNEL_REQUEST);  // 1
+    buf.putInt(channel.getRecipient());                   // 4
     buf.putString(Util.str2byte("exec"));
-    buf.putByte((byte)(waitForReply() ? 1 : 0));
-    buf.checkFreeSize(4+command.length);
+    buf.putByte((byte)(waitForReply() ? 1 : 0));          // 1
     buf.putString(command);
     write(packet);
   }
